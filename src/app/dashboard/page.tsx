@@ -1,7 +1,7 @@
 "use client";
 
 import {createClient} from "@/utils/supabase/client";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {SubmitHandler} from "react-hook-form";
 import {Header} from "@/components/ui/Header";
 import {ProductList} from "@/components/ui/ProductList";
@@ -15,6 +15,8 @@ export default function DashboardPage() {
     const [products, setProducts] = useState<IProduct[] | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+
     const supabase = createClient();
     const fetchProducts = useCallback(async () => {
         const { data, error } = await supabase
@@ -134,6 +136,18 @@ export default function DashboardPage() {
         }
     }
 
+
+    const filteredProducts = useMemo(() => {
+        if (!products) return null;
+        if (!searchQuery) return products;
+
+        const lowerCaseQuery = searchQuery.toLowerCase();
+
+        return products.filter(product =>
+            product.name.toLowerCase().includes(lowerCaseQuery)
+        );
+    }, [products, searchQuery]);
+
     return (
         <div className="min-h-screen bg-white font-['Outfit',sans-serif] pb-32">
             <Toaster position="top-center" />
@@ -147,14 +161,21 @@ export default function DashboardPage() {
                 initialData={editingProduct}
             />
             {/* 1. STICKY MOBILE HEADER */}
-            <Header onSetIsModalOpen={handleNewProductModal}/>
+            <Header onSetIsModalOpen={handleNewProductModal} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
             {/* 2. SCROLLABLE CONTENT AREA */}
-            {products && products.length > 0 ? (
-                <ProductList products={products} handleUpdateStock={handleUpdateStock} handleDelete={handleDelete} handleEdit={handleEditProductModal} />
+            {filteredProducts && filteredProducts.length > 0 ? (
+                <ProductList
+                    products={filteredProducts}
+                    handleUpdateStock={handleUpdateStock}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEditProductModal}
+                />
             ) : (
                 <div className="p-10 text-center">
-                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">Nema proizvoda</p>
+                    <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">
+                        {searchQuery ? 'Nema rezultata pretrage' : 'Nema proizvoda'}
+                    </p>
                 </div>
             )}
         </div>
