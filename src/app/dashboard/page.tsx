@@ -114,7 +114,7 @@ export default function DashboardPage() {
         );
 
         const { error } = await supabase.rpc('update_stock', {
-            row_id: id,
+            p_id: id,
             delta: isIncrement ? 1 : -1
         });
 
@@ -122,11 +122,12 @@ export default function DashboardPage() {
             toast.error("Greška pri komunikaciji sa serverom!");
         }
     };
+
     const handleDelete = async (id: number) => {
         setProducts(prev => prev?.filter(p => p.id !== id) || null);
 
         try {
-            const { error } = await supabase.rpc('delete_product', { row_id: id });
+            const { error } = await supabase.rpc('delete_product', { p_id: id });
 
             if (error) {
                 await fetchProducts();
