@@ -6,13 +6,14 @@ import {IProduct} from "@/types/Inventory";
 type Props = {
     products: Array<IProduct> | null
     handleUpdateStock: (id: number, isIncrement: boolean) => void
-
+    handleDelete: (id: number) => void
+    handleEdit: (product: IProduct) => void
 };
 export const ProductList = (props: Props) => {
     return (
         <main className="p-4 space-y-6">
-            {props.products?.map((product, index) => (
-                <ProductCard key={index} product={product} handleUpdateStock={props.handleUpdateStock} />
+            {props.products?.map((product) => (
+                <ProductCard key={product.id} product={product} handleUpdateStock={props.handleUpdateStock}  handleDelete={props.handleDelete} handleEdit={props.handleEdit} />
             ))}
         </main>
     );
