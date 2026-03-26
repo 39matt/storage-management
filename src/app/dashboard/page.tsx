@@ -1,14 +1,13 @@
 "use client";
 
-import {createClient} from "@/utils/supabase/client";
-import {useCallback, useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {SubmitHandler} from "react-hook-form";
 import {Header} from "@/components/ui/Header";
 import {ProductList} from "@/components/ui/ProductList";
-import {IProduct} from "@/types/Inventory";
-import {INewProductInput} from "@/types/Forms";
+import {IProduct} from "@/types/Product";
 import ProductModal from "@/components/inventory/ProductModal";
 import toast, {Toaster} from "react-hot-toast";
+import {createProduct, deleteProduct, getProducts, updateProduct, updateStock} from "@/app/dashboard/actions";
 
 
 export default function DashboardPage() {
@@ -17,30 +16,13 @@ export default function DashboardPage() {
     const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const supabase = createClient();
-    const fetchProducts = useCallback(async () => {
-        const { data, error } = await supabase
-            .from("products")
-            .select("*")
-            .order("id", { ascending: false });
-
-        if (error) {
-            console.error("Error fetching products:", error.message);
-            return;
-        }
-
-        if (data) {
-            setProducts(data);
-        }
-    }, [supabase]);
-
     useEffect(() => {
         const initFetch = async () => {
-            await fetchProducts();
+            setProducts(await getProducts());
         };
 
         initFetch();
-    }, [fetchProducts]);
+    }, []);
 
     const handleNewProductModal = () => {
         setEditingProduct(null);
@@ -52,35 +34,11 @@ export default function DashboardPage() {
         setIsModalOpen(true);
     };
 
-    const onFormSubmit: SubmitHandler<INewProductInput> = async (data) => {
+    const onFormSubmit: SubmitHandler<IProduct> = async (data) => {
         if (editingProduct) {
-            const { error } = await supabase.rpc('update_product', {
-                p_id: editingProduct.id,
-                p_name: data.name,
-                p_price: Number(data.price),
-                p_count: Number(data.count)
-            });
-
-            if (!error) {
-                await fetchProducts();
-                setIsModalOpen(false);
-                setEditingProduct(null);
-            } else {
-                console.error("Supabase Update Error:", error.message);
-            }
+            await updateProduct(data);
         } else {
-            const { error } = await supabase.rpc('create_product', {
-                p_name: data.name,
-                p_price: Number(data.price),
-                p_count: Number(data.count)
-            });
-
-            if (!error) {
-                await fetchProducts();
-                setIsModalOpen(false);
-            } else {
-                console.error("Supabase Create Error:", error.message);
-            }
+            await createProduct(data);
         }
     };
 
@@ -113,30 +71,14 @@ export default function DashboardPage() {
             ) || null
         );
 
-        const { error } = await supabase.rpc('update_stock', {
-            p_id: id,
-            delta: isIncrement ? 1 : -1
-        });
-
-        if (error) {
-            toast.error("Greška pri komunikaciji sa serverom!");
-        }
+        await updateStock(id, isIncrement ? 1 : -1);
     };
 
     const handleDelete = async (id: number) => {
         setProducts(prev => prev?.filter(p => p.id !== id) || null);
 
-        try {
-            const { error } = await supabase.rpc('delete_product', { p_id: id });
-
-            if (error) {
-                await fetchProducts();
-            }
-        } catch {
-            await fetchProducts();
-        }
+        await deleteProduct(id);
     }
-
 
     const filteredProducts = useMemo(() => {
         if (!products) return null;

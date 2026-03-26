@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { IProduct } from "@/types/Inventory";
+import { IProduct } from "@/types/Product";
 import { Edit3, Minus, Plus, Tag, Trash2 } from "lucide-react";
 
 type Props = {

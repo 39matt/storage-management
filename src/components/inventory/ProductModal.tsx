@@ -3,18 +3,17 @@
 import { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { X, Loader2 } from "lucide-react";
-import { IProduct } from "@/types/Inventory";
-import { INewProductInput } from "@/types/Forms";
+import { IProduct } from "@/types/Product";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: SubmitHandler<INewProductInput>;
+    onSubmit: SubmitHandler<IProduct>;
     initialData: IProduct | null;
 }
 
 export default function ProductModal(props: Props) {
-    const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<INewProductInput>();
+    const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<IProduct>();
 
     useEffect(() => {
         if (props.initialData) {
@@ -34,7 +33,7 @@ export default function ProductModal(props: Props) {
 
     if (!props.isOpen) return null;
 
-    const handleInternalSubmit = async (data: INewProductInput) => {
+    const handleInternalSubmit = async (data: IProduct) => {
         await props.onSubmit(data);
     };
 

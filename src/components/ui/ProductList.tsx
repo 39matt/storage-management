@@ -1,7 +1,7 @@
 // @flow
 import * as React from 'react';
 import {ProductCard} from "@/components/ui/ProductCard";
-import {IProduct} from "@/types/Inventory";
+import {IProduct} from "@/types/Product";
 
 type Props = {
     products: Array<IProduct> | null
